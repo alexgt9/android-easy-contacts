@@ -1,7 +1,10 @@
 package com.example.easycontacts.ui.screens
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -43,19 +46,21 @@ fun ContactsScreen(contactsUiState: ListContactsUiState, onClickRefresh: () -> U
 
 @Composable
 fun ContactsList(contacts: List<Contact>, onClickRefresh: () -> Unit) {
-    Column(modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState())) {
-        val modifier = Modifier.padding(4.dp)
-        contacts.forEach { contact ->
-            Card(modifier = Modifier.padding(bottom = 8.dp)) {
-                Text(modifier = modifier, text = contact.name)
-                Text(modifier = modifier, text = contact.phone)
-                Text(modifier = modifier, text = contact.email)
-                Text(modifier = modifier, text = contact.createdAt.atZone(ZoneId.systemDefault()).toLocalDateTime().truncatedTo(ChronoUnit.MINUTES).toString())
+    LazyColumn(modifier = Modifier.padding(16.dp)) {
+        items(contacts) { contact ->
+            Card(modifier = Modifier.padding(8.dp).fillMaxWidth()) {
+                Column(modifier = Modifier.padding(8.dp)) {
+                    Text(text = contact.name)
+                    Text(text = contact.phone)
+                    Text(text = contact.email)
+                    Text(text = contact.createdAt.atZone(ZoneId.systemDefault()).toLocalDateTime().truncatedTo(ChronoUnit.MINUTES).toString())
+                }
             }
         }
-        Button(onClick = onClickRefresh) {
-            Text("Refresh")
-        }
+        item {
+            Button(onClick = onClickRefresh) {
+                Text("Refresh")
+            } }
     }
 }
 
