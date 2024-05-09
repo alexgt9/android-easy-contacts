@@ -22,7 +22,7 @@ import java.util.UUID
 @Composable
 fun ContactsListRoute(viewModel: MainActivityViewModel = hiltViewModel()) {
     ContactsScreen(
-        contactsUiState = viewModel.contactsUuiState.collectAsState().value,
+        contactsUiState = viewModel.contactsLocalUiState.collectAsState().value,
         viewModel::loadContacts,
     )
 }
