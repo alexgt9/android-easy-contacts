@@ -2,14 +2,24 @@ package com.example.easycontacts.repository
 
 import com.example.easycontacts.BuildConfig
 import com.example.easycontacts.ui.screens.Contact
+import com.example.easycontacts.ui.screens.NetworkContact
+import dagger.Binds
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
+import java.time.Instant
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,16 +30,8 @@ private interface RetrofitContactsNetworkApi {
     @GET(value = "users/{username}/contacts")
     suspend fun getContacts(
         @Path("username") username: String,
-    ): NetworkResponse<List<Contact>>
+    ): List<NetworkContact>
 }
-
-/**
- * Wrapper for data provided from the [CONTACTS_BASE_URL]
- */
-@Serializable
-private data class NetworkResponse<T>(
-    val data: T,
-)
 
 interface ContactsNetworkDataSource {
     suspend fun getContacts(username: String): List<Contact>
@@ -41,7 +43,7 @@ private const val CONTACTS_BASE_URL = "https://contacts-api-yy1b.onrender.com/"
  * [Retrofit] backed [ContactsNetworkDataSource]
  */
 @Singleton
-internal class RetrofitContactsNetwork @Inject constructor(
+class RetrofitContactsNetwork @Inject constructor(
     networkJson: Json,
     okhttpCallFactory: dagger.Lazy<Call.Factory>,
 ) : ContactsNetworkDataSource {
@@ -59,5 +61,53 @@ internal class RetrofitContactsNetwork @Inject constructor(
             .create(RetrofitContactsNetworkApi::class.java)
 
     override suspend fun getContacts(username: String): List<Contact> =
-        networkApi.getContacts(username = username).data
+        networkApi.getContacts(username = username).map { it.toContact() }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object NetworkModule {
+    @Provides
+    fun provideRetrofit(impl: RetrofitContactsNetwork): ContactsNetworkDataSource = impl
+
+    @Provides
+    fun provideJson(): Json = Json {
+        ignoreUnknownKeys = true
+    }
+
+    @Provides
+    @Singleton
+    fun okHttpCallFactory(): Call.Factory =
+        OkHttpClient.Builder()
+            .addInterceptor(
+                HttpLoggingInterceptor()
+                    .apply {
+                        if (BuildConfig.DEBUG) {
+                            setLevel(HttpLoggingInterceptor.Level.BODY)
+                        }
+                    },
+            )
+            .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+}
+
+
+fun NetworkContact.toContact(): Contact {
+    return Contact(
+        UUID.fromString(id),
+        name,
+        phone,
+        email,
+        Instant.parse(createdAt),
+    )
+}
+
+fun Contact.toNetworkContact(): NetworkContact {
+    return NetworkContact(
+        id.toString(),
+        name,
+        phone,
+        email,
+        createdAt.toString(),
+    )
 }
