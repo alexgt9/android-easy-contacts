@@ -2,6 +2,8 @@ package com.example.easycontacts.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
@@ -20,7 +22,7 @@ import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 @Composable
-fun ContactsListRoute(viewModel: MainActivityViewModel = hiltViewModel()) {
+fun ContactsListRoute(currentUser: String, viewModel: MainActivityViewModel = hiltViewModel()) {
     ContactsScreen(
         contactsUiState = viewModel.contactsLocalUiState.collectAsState().value,
         viewModel::loadContacts,
@@ -32,14 +34,16 @@ fun ContactsScreen(contactsUiState: ListContactsUiState, onClickRefresh: () -> U
     when (contactsUiState) {
         ListContactsUiState.NotLoaded -> Text("Not loaded")
         ListContactsUiState.Loading -> Text("Loading")
-        ListContactsUiState.Empty -> Text("Empty")
-        is ListContactsUiState.Success -> ContactsList(contacts = contactsUiState.contacts, onClickRefresh = onClickRefresh)
+        ListContactsUiState.Empty -> Text("No contacts found")
+        is ListContactsUiState.Success -> {
+            ContactsList(contacts = contactsUiState.contacts, onClickRefresh = onClickRefresh)
+        }
     }
 }
 
 @Composable
 fun ContactsList(contacts: List<Contact>, onClickRefresh: () -> Unit) {
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState())) {
         val modifier = Modifier.padding(4.dp)
         contacts.forEach { contact ->
             Card(modifier = Modifier.padding(bottom = 8.dp)) {

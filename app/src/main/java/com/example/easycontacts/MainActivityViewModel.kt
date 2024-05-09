@@ -1,6 +1,7 @@
 package com.example.easycontacts
 
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.easycontacts.repository.ContactsRepository
@@ -24,8 +25,9 @@ import javax.inject.Inject
 class MainActivityViewModel @Inject constructor(
     private val contactsRepository: ContactsRepository,
     private val contactDao: ContactDao,
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val username = "aleh"
+    val selectedUsername = savedStateHandle.getStateFlow(key = USERNAME, initialValue = "aleh")
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val contactsLocalUiState: StateFlow<ListContactsUiState> = contactDao.getContactsEntities().flatMapLatest {
@@ -40,14 +42,30 @@ class MainActivityViewModel @Inject constructor(
         initialValue = ListContactsUiState.Loading,
     )
 
+    fun onSelectedUserChanged(username: String) {
+        savedStateHandle[USERNAME] = username
+    }
+
     init {
         loadContacts()
+    }
+
+    fun resetContacts() {
+        viewModelScope.launch {
+            try {
+                contactDao.deleteAllContacts()
+                val contacts = contactsRepository.getContacts(selectedUsername.value)
+                contactDao.upsertContacts(contacts)
+            } catch (e: Exception) {
+                Log.e("MainActivityViewModel", "Error loading contacts", e)
+            }
+        }
     }
 
     fun loadContacts() {
         viewModelScope.launch {
             try {
-                val contacts = contactsRepository.getContacts(username)
+                val contacts = contactsRepository.getContacts(selectedUsername.value)
                 contactDao.upsertContacts(contacts)
             } catch (e: Exception) {
                 Log.e("MainActivityViewModel", "Error loading contacts", e)
@@ -62,3 +80,5 @@ sealed interface ListContactsUiState {
     data object Empty : ListContactsUiState
     data class Success(val contacts: List<Contact>) : ListContactsUiState
 }
+
+private const val USERNAME = "username"
