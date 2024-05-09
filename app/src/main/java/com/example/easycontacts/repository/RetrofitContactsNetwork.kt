@@ -1,14 +1,11 @@
 package com.example.easycontacts.repository
 
 import com.example.easycontacts.BuildConfig
-import com.example.easycontacts.ui.screens.Contact
-import com.example.easycontacts.ui.screens.NetworkContact
-import dagger.Binds
+import com.example.easycontacts.model.Contact
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
@@ -99,15 +96,5 @@ fun NetworkContact.toContact(): Contact {
         phone,
         email,
         Instant.parse(createdAt),
-    )
-}
-
-fun Contact.toNetworkContact(): NetworkContact {
-    return NetworkContact(
-        id.toString(),
-        name,
-        phone,
-        email,
-        createdAt.toString(),
     )
 }

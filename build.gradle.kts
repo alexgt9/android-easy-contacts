@@ -3,5 +3,5 @@ plugins {
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.jetbrainsKotlinAndroid) apply false
     id("com.google.dagger.hilt.android") version libs.versions.hiltAndroid apply false
-    kotlin("kapt") version "1.9.23"
+    id("com.google.devtools.ksp") version "1.9.23-1.0.20" apply false
 }
