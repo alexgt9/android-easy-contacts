@@ -34,7 +34,6 @@ fun ContactsScreen(contactsUiState: ListContactsUiState, onClickRefresh: () -> U
         ListContactsUiState.Loading -> Text("Loading")
         ListContactsUiState.Empty -> Text("Empty")
         is ListContactsUiState.Success -> ContactsList(contacts = contactsUiState.contacts, onClickRefresh = onClickRefresh)
-        is ListContactsUiState.Error -> Text(text = "Error: ${contactsUiState.throwable.message}")
     }
 }
 

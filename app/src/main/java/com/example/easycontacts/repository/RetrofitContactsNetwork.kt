@@ -34,7 +34,7 @@ interface ContactsNetworkDataSource {
     suspend fun getContacts(username: String): List<Contact>
 }
 
-private const val CONTACTS_BASE_URL = "https://contacts-api-yy1b.onrender.com/"
+private const val CONTACTS_BASE_URL = BuildConfig.BACKEND_URL
 
 /**
  * [Retrofit] backed [ContactsNetworkDataSource]

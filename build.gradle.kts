@@ -4,4 +4,5 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid) apply false
     id("com.google.dagger.hilt.android") version libs.versions.hiltAndroid apply false
     id("com.google.devtools.ksp") version "1.9.23-1.0.20" apply false
+    alias(libs.plugins.secrets) apply false
 }
