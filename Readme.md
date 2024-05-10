@@ -34,14 +34,15 @@ In summary, the data flow is as follows:
 
 ## Folder structure
 
-- data/: This directory contains classes related to data handling, such as models, database access objects (DAOs), and repositories. It's further divided into:  
-  -- database/: This directory contains classes related to the local database, such as ContactDao.  
-  -- model/: This directory contains data model classes, such as Contact.  
-  -- network/: This directory contains classes related to network operations, such as ContactsNetworkDataSource and OfflineFirstContactsRepository.  
-  -- repository/: This directory contains repository classes, such as ContactsRepository.
+- data/: This directory contains classes related to data handling, such as models, database access objects (DAOs), and repositories. It's further divided into:
+  - database  
+  - database/: This directory contains classes related to the local database, such as ContactDao.  
+  - model/: This directory contains data model classes, such as Contact.  
+  - network/: This directory contains classes related to network operations, such as ContactsNetworkDataSource and OfflineFirstContactsRepository.  
+  - repository/: This directory contains repository classes, such as ContactsRepository.
 - ui/: This directory contains classes related to the user interface. It's further divided into:  
-  -- screens/: This directory contains classes for different screens in the application, such as ContactsScreen.  
-  -- components/: This directory contains reusable UI components.
+  - screens/: This directory contains classes for different screens in the application, such as ContactsScreen.  
+  - components/: This directory contains reusable UI components.
 - MainActivity.kt: This is the main activity of the application.
 - MainActivityViewModel.kt: This is the ViewModel for the main activity.
 
