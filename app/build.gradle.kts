@@ -5,6 +5,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization") version "1.9.23"
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    id("androidx.room") version ("2.6.1")
 }
 
 android {
@@ -58,6 +59,10 @@ secrets {
     defaultPropertiesFileName = "secrets.defaults.properties"
 }
 
+room {
+    schemaDirectory("$projectDir/schemas")
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -70,6 +75,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.room.common)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.gradle.plugin)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
