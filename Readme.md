@@ -28,9 +28,11 @@ Then the app fetches the contacts from an API and stores them in a local databas
 That trigger the update in the UI with the latest info (always reading from the local database as the source of truth).
 
 In summary, the data flow is as follows:
-- `ContactDao` (Local Database) -> UI
+- `ContactDao` (Local Database) -> `ContactsScreen` (User Interface)
   And at the same time
 - API -> `OfflineFirstContactsRepository` -> `ContactDao` (Local Database) -> `MainActivityViewModel` -> `ContactsScreen` (User Interface).
+
+![Data flow](docs/data-flow.png)
 
 ## Folder structure
 
