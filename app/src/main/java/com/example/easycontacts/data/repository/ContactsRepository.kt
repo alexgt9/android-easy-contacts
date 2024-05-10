@@ -1,7 +1,6 @@
 package com.example.easycontacts.data.repository
 
 import com.example.easycontacts.data.model.Contact
-import com.example.easycontacts.data.network.OfflineFirstContactsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
