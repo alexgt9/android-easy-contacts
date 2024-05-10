@@ -16,7 +16,7 @@ internal class InstantConverter {
 
 internal class UuidConverter {
     @TypeConverter
-    fun stringToUuid(value: String) = UUID.fromString(value)
+    fun stringToUuid(value: String): UUID = UUID.fromString(value)!!
 
     @TypeConverter
     fun uuidToString(uuid: UUID) = uuid.toString()

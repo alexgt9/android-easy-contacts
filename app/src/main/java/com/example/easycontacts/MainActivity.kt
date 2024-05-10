@@ -92,7 +92,7 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxSize()
                                 .padding(top = it.calculateTopPadding())
                         ) {
-                            ContactsListRoute(currentUser = currentUser, showSnackbar = { message ->
+                            ContactsListRoute(showSnackbar = { message ->
                                 scope.launch {
                                     snackbarHostState.showSnackbar(message)
                                 }

@@ -30,7 +30,10 @@ import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 @Composable
-fun ContactsListRoute(currentUser: String, showSnackbar: (message: String) -> Unit, viewModel: MainActivityViewModel = hiltViewModel()) {
+fun ContactsListRoute(
+    showSnackbar: (message: String) -> Unit,
+    viewModel: MainActivityViewModel = hiltViewModel()
+) {
     ContactsScreen(
         contactsUiState = viewModel.contactsLocalUiState.collectAsState().value,
         syncContactsUiState = viewModel.syncContactsUiState.collectAsState().value,
@@ -70,7 +73,13 @@ fun ContactsScreen(
         when (contactsUiState) {
             ListContactsUiState.NotLoaded -> Text("Not loaded")
             ListContactsUiState.Loading -> Text("Loading")
-            ListContactsUiState.Empty -> Text("No contacts found")
+            ListContactsUiState.Empty -> {
+                if (syncContactsUiState == SyncContactsUiState.Syncing) {
+                    Text("Loading")
+                } else {
+                    Text("No contacts found")
+                }
+            }
             is ListContactsUiState.Success -> {
                 ContactsList(contacts = contactsUiState.contacts, onClickRefresh = onClickRefresh)
             }
