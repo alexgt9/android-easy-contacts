@@ -1,21 +1,23 @@
 package com.example.easycontacts.ui.screens
 
-import androidx.compose.foundation.layout.Box
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -23,7 +25,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.easycontacts.ListContactsUiState
 import com.example.easycontacts.MainActivityViewModel
 import com.example.easycontacts.SyncContactsUiState
-import com.example.easycontacts.model.Contact
+import com.example.easycontacts.data.model.Contact
 import java.time.Instant
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
@@ -49,50 +51,64 @@ fun ContactsScreen(
     onClickRefresh: () -> Unit,
     showSnackbar: (message: String) -> Unit
 ) {
+    // There is no simple way to avoid showing the snackbar when the screen is recomposed
+    var snackbarDisplayed by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(syncContactsUiState) {
-        if (syncContactsUiState == SyncContactsUiState.Synced) {
-            showSnackbar("Synced")
+        when (syncContactsUiState) {
+            SyncContactsUiState.Synced -> {
+                if (snackbarDisplayed) return@LaunchedEffect
+                showSnackbar("Synced")
+                snackbarDisplayed = true
+            }
+            is SyncContactsUiState.Error -> showSnackbar(syncContactsUiState.message)
+            else -> {
+                snackbarDisplayed = false
+            }
         }
     }
-    Box(
+    when (syncContactsUiState) {
+        SyncContactsUiState.Syncing -> {
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                color = MaterialTheme.colorScheme.secondary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            )
+        }
+        else -> {}
+    }
+    Column(
         Modifier
             .fillMaxWidth()
             .padding(16.dp)) {
-        when (syncContactsUiState) {
-            SyncContactsUiState.Syncing -> {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .width(20.dp)
-                        .align(Alignment.TopEnd),
-                    color = MaterialTheme.colorScheme.secondary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                )
-            }
-            else -> {}
-        }
         when (contactsUiState) {
-            ListContactsUiState.NotLoaded -> Text("Not loaded")
-            ListContactsUiState.Loading -> Text("Loading")
+            ListContactsUiState.Loading -> Text("Loading...")
             ListContactsUiState.Empty -> {
                 if (syncContactsUiState == SyncContactsUiState.Syncing) {
-                    Text("Loading")
+                    Text("Loading...")
                 } else {
                     Text("No contacts found")
                 }
             }
             is ListContactsUiState.Success -> {
-                ContactsList(contacts = contactsUiState.contacts, onClickRefresh = onClickRefresh)
+                ContactsList(contacts = contactsUiState.contacts)
+            }
+        }
+        if (syncContactsUiState != SyncContactsUiState.Syncing) {
+            Button(onClick = onClickRefresh) {
+                Text("Refresh")
             }
         }
     }
 }
 
 @Composable
-fun ContactsList(contacts: List<Contact>, onClickRefresh: () -> Unit) {
-    LazyColumn(modifier = Modifier.padding(8.dp)) {
+fun ContactsList(contacts: List<Contact>) {
+    LazyColumn {
         items(contacts) { contact ->
             Card(modifier = Modifier
-                .padding(8.dp)
+                .padding(vertical = 8.dp)
                 .fillMaxWidth()) {
                 Column(modifier = Modifier.padding(8.dp)) {
                     Text(text = contact.name)
@@ -102,16 +118,51 @@ fun ContactsList(contacts: List<Contact>, onClickRefresh: () -> Unit) {
                 }
             }
         }
-        item {
-            Button(onClick = onClickRefresh) {
-                Text("Refresh")
-            } }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun ContactsScreenPreview() {
+    ContactsScreen(
+        contactsUiState = ListContactsUiState.Success(
+            listOf(
+                Contact(
+                    UUID.randomUUID(),
+                    "John Doe",
+                    "1234567890",
+                    "email@example.com",
+                    Instant.now(),
+                ),
+                Contact(
+                    UUID.randomUUID(),
+                    "Jane Doe",
+                    "0987654321",
+                    "otro@example.com",
+                    Instant.now(),
+                ),
+            ),
+        ),
+        syncContactsUiState = SyncContactsUiState.Synced,
+        onClickRefresh = {},
+        showSnackbar = {},
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ContactsScreenLoadingPreview() {
+    ContactsScreen(
+        contactsUiState = ListContactsUiState.Empty,
+        syncContactsUiState = SyncContactsUiState.Syncing,
+        onClickRefresh = {},
+        showSnackbar = {},
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ContactsScreenLoadingWithLocalDataPreview() {
     ContactsScreen(
         contactsUiState = ListContactsUiState.Success(
             listOf(

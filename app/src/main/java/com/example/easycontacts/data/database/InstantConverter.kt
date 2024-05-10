@@ -1,4 +1,4 @@
-package com.example.easycontacts.repository
+package com.example.easycontacts.data.database
 
 import androidx.room.TypeConverter
 import java.time.Instant

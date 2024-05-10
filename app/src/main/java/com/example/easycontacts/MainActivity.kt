@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.easycontacts.ui.components.UserDialog
@@ -45,7 +46,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val scope = rememberCoroutineScope()
             val snackbarHostState = remember { SnackbarHostState() }
-            var showUserDialog by remember { mutableStateOf(false) }
+            var showUserDialog by rememberSaveable { mutableStateOf(false) }
             val currentUser = viewModel.selectedUsername.collectAsState().value
             EasyContactsTheme {
                 Surface(
@@ -58,7 +59,7 @@ class MainActivity : ComponentActivity() {
                                     UserDialog(
                                         currentUser = currentUser,
                                         onCurrentUserChange = viewModel::onSelectedUserChanged,
-                                        onDismissRequest = { showUserDialog = false; viewModel.resetContacts() })
+                                        onDismissRequest = { showUserDialog = false; viewModel.loadContacts(deletePrevious = true) })
                                 }
                             }
                         }

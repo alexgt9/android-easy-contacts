@@ -1,11 +1,11 @@
-package com.example.easycontacts.repository
+package com.example.easycontacts.data.database
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.example.easycontacts.model.Contact
+import com.example.easycontacts.data.model.Contact
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -40,11 +40,7 @@ internal object DatabaseModule {
         LocalDatabase::class.java,
         "easy-contacts-database",
     ).build()
-}
 
-@Module
-@InstallIn(SingletonComponent::class)
-internal object DaosModule {
     @Provides
     fun providesContactsDao(
         database: LocalDatabase,

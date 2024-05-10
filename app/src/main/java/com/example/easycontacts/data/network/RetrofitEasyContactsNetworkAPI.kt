@@ -1,7 +1,7 @@
-package com.example.easycontacts.repository
+package com.example.easycontacts.data.network
 
 import com.example.easycontacts.BuildConfig
-import com.example.easycontacts.model.Contact
+import com.example.easycontacts.data.model.Contact
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

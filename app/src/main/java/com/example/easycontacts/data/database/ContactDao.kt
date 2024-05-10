@@ -1,9 +1,9 @@
-package com.example.easycontacts.repository
+package com.example.easycontacts.data.database
 
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
-import com.example.easycontacts.model.Contact
+import com.example.easycontacts.data.model.Contact
 import kotlinx.coroutines.flow.Flow
 
 @Dao
