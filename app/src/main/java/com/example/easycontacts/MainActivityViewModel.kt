@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,6 +27,9 @@ class MainActivityViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val selectedUsername = savedStateHandle.getStateFlow(key = USERNAME, initialValue = "aleh")
+
+    private val _syncContactsUiState = MutableStateFlow<SyncContactsUiState>(SyncContactsUiState.NotSynced)
+    val syncContactsUiState = _syncContactsUiState.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val contactsLocalUiState: StateFlow<ListContactsUiState> = contactDao.getContactsEntities().flatMapLatest {
@@ -50,26 +52,33 @@ class MainActivityViewModel @Inject constructor(
         loadContacts()
     }
 
+    fun loadContacts() {
+        viewModelScope.launch {
+            syncContacts()
+        }
+    }
+
     fun resetContacts() {
         viewModelScope.launch {
             try {
                 contactDao.deleteAllContacts()
-                val contacts = contactsRepository.getContacts(selectedUsername.value)
-                contactDao.upsertContacts(contacts)
+                syncContacts()
             } catch (e: Exception) {
                 Log.e("MainActivityViewModel", "Error loading contacts", e)
             }
         }
     }
 
-    fun loadContacts() {
-        viewModelScope.launch {
-            try {
-                val contacts = contactsRepository.getContacts(selectedUsername.value)
-                contactDao.upsertContacts(contacts)
-            } catch (e: Exception) {
-                Log.e("MainActivityViewModel", "Error loading contacts", e)
-            }
+    private suspend fun syncContacts() {
+        try {
+            _syncContactsUiState.value = SyncContactsUiState.Syncing
+            delay(3000)
+            val contacts = contactsRepository.getContacts(selectedUsername.value)
+            contactDao.upsertContacts(contacts)
+        } catch (e: Exception) {
+            Log.e("MainActivityViewModel", "Error loading contacts", e)
+        } finally {
+            _syncContactsUiState.value = SyncContactsUiState.Synced
         }
     }
 }
@@ -79,6 +88,12 @@ sealed interface ListContactsUiState {
     data object Loading : ListContactsUiState
     data object Empty : ListContactsUiState
     data class Success(val contacts: List<Contact>) : ListContactsUiState
+}
+
+sealed interface SyncContactsUiState {
+    data object NotSynced : SyncContactsUiState
+    data object Syncing : SyncContactsUiState
+    data object Synced : SyncContactsUiState
 }
 
 private const val USERNAME = "username"

@@ -15,6 +15,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -23,12 +25,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.easycontacts.ui.components.UserDialog
 import com.example.easycontacts.ui.screens.ContactsListRoute
 import com.example.easycontacts.ui.theme.EasyContactsTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -39,6 +43,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val scope = rememberCoroutineScope()
+            val snackbarHostState = remember { SnackbarHostState() }
             var showUserDialog by remember { mutableStateOf(false) }
             val currentUser = viewModel.selectedUsername.collectAsState().value
             EasyContactsTheme {
@@ -58,6 +64,9 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     Scaffold(
+                        snackbarHost = {
+                            SnackbarHost(hostState = snackbarHostState)
+                        },
                         topBar = {
                             TopAppBar(
                                 colors = TopAppBarDefaults.topAppBarColors(
@@ -83,7 +92,11 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxSize()
                                 .padding(top = it.calculateTopPadding())
                         ) {
-                            ContactsListRoute(currentUser = currentUser)
+                            ContactsListRoute(currentUser = currentUser, showSnackbar = { message ->
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(message)
+                                }
+                            })
                         }
                     }
                 }
